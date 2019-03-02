@@ -1,0 +1,47 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: spark-offset
+  namespace: default
+  labels:
+    app: spark-offset
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spark-offset
+  template:
+    metadata:
+      labels:
+        app: spark-offset
+    spec:
+      containers:
+      - name: spark-offset
+        imagePullPolicy: Always
+        image: cuidapeng/spark-offset:v0.1
+        command:
+        - spark-submit
+        args:
+        - --driver-java-options
+        - "-Duser.timezone=Asia/Shanghai"
+        - --repositories
+        - http://maven.aliyun.com/nexus/content/groups/public/
+        - --packages
+        - mysql:mysql-connector-java:5.1.27,org.apache.spark:spark-streaming_2.11:2.3.0,,org.apache.spark:spark-streaming-kafka-0-10_2.11:2.3.0
+        - --executor-memory
+        - 2G
+        - --driver-memory
+        - 2G
+        - --conf
+        - "spark.streaming.kafka.maxRatePerPartition=100"
+        - --class
+        - com.github.cclient.spark.Stream
+        - spark-streaming-kafka-offset-mysql_2.11-0.1.jar
+        - prod
+        - task-response
+        - extract
+        resources:
+          requests:
+            memory: "2Gi"
+          limits:
+            memory: "3Gi"
